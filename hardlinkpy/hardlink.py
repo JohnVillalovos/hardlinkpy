@@ -50,7 +50,6 @@ from __future__ import print_function
 import argparse
 import os
 import re
-import stat
 import sys
 import time
 from typing import Dict, List, Optional, Tuple
@@ -234,7 +233,7 @@ def hardlink_files(
 
 
 def hardlink_identical_files(
-    *, directories: List[str], filename: str, args: argparse.Namespace
+    *, directories: List[str], dir_entry: os.DirEntry, args: argparse.Namespace
 ) -> None:
     """hardlink identical files
 
@@ -264,23 +263,15 @@ def hardlink_identical_files(
      """
 
     for exclude in args.excludes:
-        if re.search(exclude, filename):
+        if re.search(exclude, dir_entry.path):
             return
-    try:
-        stat_info = os.stat(filename)
-    except OSError:
-        print(f"Unable to get stat info for: {filename}")
-        return
-    if not stat_info:
-        # We didn't get the file status info :(
-        return
 
     # Is it a directory?
-    if stat.S_ISDIR(stat_info.st_mode):
-        # If it is a directory then add it to the list of directories.
-        directories.append(filename)
+    if dir_entry.is_dir(follow_symlinks=False):
+        directories.append(dir_entry.path)
     # Is it a regular file?
-    elif stat.S_ISREG(stat_info.st_mode):
+    elif dir_entry.is_file(follow_symlinks=False):
+        stat_info = dir_entry.stat(follow_symlinks=False)
         # Create the hash for the file.
         file_hash = hash_value(
             stat_info.st_size, stat_info.st_mtime, args.notimestamp or args.contentonly
@@ -288,15 +279,15 @@ def hardlink_identical_files(
         # Bump statistics count of regular files found.
         gStats.found_regular_file()
         if args.verbose >= 2:
-            print(f"File: {filename}")
-        work_file_info = (filename, stat_info)
+            print(f"File: {dir_entry.path}")
+        work_file_info = (dir_entry.path, stat_info)
         if file_hash in file_hashes:
             # We have file(s) that have the same hash as our current file.
             # Let's go through the list of files with the same hash and see if
             # we are already hardlinked to any of them.
             for (temp_filename, temp_stat_info) in file_hashes[file_hash]:
                 if is_already_hardlinked(st1=stat_info, st2=temp_stat_info):
-                    gStats.found_hardlink(temp_filename, filename, temp_stat_info)
+                    gStats.found_hardlink(temp_filename, dir_entry.path, temp_stat_info)
                     break
             else:
                 # We did not find this file as hardlinked to any other file
@@ -310,7 +301,7 @@ def hardlink_identical_files(
                     ):
                         hardlink_files(
                             sourcefile=temp_filename,
-                            destfile=filename,
+                            destfile=dir_entry.path,
                             stat_info=temp_stat_info,
                             args=args,
                         )
@@ -551,40 +542,40 @@ def main() -> int:
     directories = args.directories.copy()
     while directories:
         # Get the last directory in the list
-        directory = directories[-1] + "/"
-        del directories[-1]
+        directory = directories.pop() + "/"
         if not os.path.isdir(directory):
             print(f"{directory} is NOT a directory!")
         else:
             gStats.found_directory()
             # Loop through all the files in the directory
             try:
-                dir_entries = os.listdir(directory)
-            except OSError:
+                dir_entries = os.scandir(directory)
+            except (OSError, PermissionError) as exc:
                 print(
-                    "Error: Unable to do an os.listdir on: %s  Skipping..." % directory
+                    f"Error: Unable to do an os.scandir on: {directory}  Skipping...",
+                    exc,
                 )
                 continue
-            for entry in dir_entries:
-                pathname = os.path.normpath(os.path.join(directory, entry))
+            for dir_entry in dir_entries:
+                pathname = dir_entry.path
                 # Look at files/dirs beginning with "."
-                if entry[0] == ".":
+                if dir_entry.name.startswith("."):
                     # Ignore any mirror.pl files.  These are the files that
                     # start with ".in."
-                    if MIRROR_PL_REGEX.match(entry):
+                    if MIRROR_PL_REGEX.match(dir_entry.name):
                         continue
                     # Ignore any RSYNC files.  These are files that have the
                     # format .FILENAME.??????
-                    if RSYNC_TEMP_REGEX.match(entry):
+                    if RSYNC_TEMP_REGEX.match(dir_entry.name):
                         continue
-                if os.path.islink(pathname):
+                if dir_entry.is_symlink():
                     if debug1:
                         print(f"{pathname}: is a symbolic link, ignoring")
                     continue
-                if debug1 and os.path.isdir(pathname):
+                if debug1 and dir_entry.is_dir():
                     print(f"{pathname} is a directory!")
                 hardlink_identical_files(
-                    directories=directories, filename=pathname, args=args
+                    directories=directories, dir_entry=dir_entry, args=args
                 )
     if args.printstats:
         gStats.print_stats(args)
