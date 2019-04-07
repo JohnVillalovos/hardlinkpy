@@ -1,4 +1,6 @@
+.mypy_cache/
 .tox/
 hardlinkpy.egg-info/
+__pycache__/
 
 *.swp
