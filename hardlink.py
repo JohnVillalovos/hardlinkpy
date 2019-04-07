@@ -1,9 +1,9 @@
-#!/usr/bin/python -ttu
+#!/usr/bin/python3 -ttu
 
 # hardlink - Goes through a directory structure and creates hardlinks for
 # files which are identical.
 #
-# Copyright (C) 2003 - 2010  John L. Villalovos, Hillsboro, Oregon
+# Copyright (C) 2003 - 2019  John L. Villalovos, Hillsboro, Oregon
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -189,7 +189,7 @@ def hardlink_files(sourcefile, destfile, stat_info, options):
     try:
         if not options.dryrun:
             os.rename(destfile, temp_name)
-    except OSError, error:
+    except OSError as error:
         print("Failed to rename: %s to %s" % (destfile, temp_name))
         print(error)
         result = False
@@ -276,7 +276,7 @@ def hardlink_identical_files(directories, filename, options):
         if options.verbose >= 2:
             print("File: %s" % filename)
         work_file_info = (filename, stat_info)
-        if file_hashes.has_key(file_hash):
+        if file_hash in file_hashes:
             # We have file(s) that have the same hash as our current file.
             # Let's go through the list of files with the same hash and see if
             # we are already hardlinked to any of them.
@@ -307,13 +307,13 @@ def hardlink_identical_files(directories, filename, options):
 
 class cStatistics:
     def __init__(self):
-        self.dircount = 0L                  # how many directories we find
-        self.regularfiles = 0L              # how many regular files we find
-        self.comparisons = 0L               # how many file content comparisons
-        self.hardlinked_thisrun = 0L        # hardlinks done this run
-        self.hardlinked_previously = 0L;    # hardlinks that are already existing
-        self.bytes_saved_thisrun = 0L       # bytes saved by hardlinking this run
-        self.bytes_saved_previously = 0L    # bytes saved by previous hardlinks
+        self.dircount = 0                   # how many directories we find
+        self.regularfiles = 0               # how many regular files we find
+        self.comparisons = 0                # how many file content comparisons
+        self.hardlinked_thisrun = 0         # hardlinks done this run
+        self.hardlinked_previously = 0;     # hardlinks that are already existing
+        self.bytes_saved_thisrun = 0        # bytes saved by hardlinking this run
+        self.bytes_saved_previously = 0     # bytes saved by previous hardlinks
         self.hardlinkstats = []             # list of files hardlinked this run
         self.starttime = time.time()        # track how long it takes
         self.previouslyhardlinked = {}      # list of files hardlinked previously
@@ -328,7 +328,7 @@ class cStatistics:
         filesize = stat_info[stat.ST_SIZE]
         self.hardlinked_previously = self.hardlinked_previously + 1
         self.bytes_saved_previously = self.bytes_saved_previously + filesize
-        if not self.previouslyhardlinked.has_key(sourcefile):
+        if not sourcefile in self.previouslyhardlinked:
             self.previouslyhardlinked[sourcefile] = (stat_info,[destfile])
         else:
             self.previouslyhardlinked[sourcefile][1].append(destfile)
@@ -463,7 +463,7 @@ gStats = cStatistics()
 
 file_hashes = {}
 
-VERSION = "0.05 - 2010-01-07 (07-Jan-2010)"
+VERSION = "0.06 - 2019-04-07 (07-Jan-2010)"
 
 def main():
     # Parse our argument list and get our list of directories
