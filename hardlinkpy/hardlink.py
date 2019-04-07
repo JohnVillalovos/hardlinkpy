@@ -521,7 +521,10 @@ def parse_args(passed_args: Optional[List[str]] = None) -> argparse.Namespace:
 debug = None
 debug1 = None
 
+# MAX_HASHES must be a power of 2, so that MAX_HASHES - 1 will be a value with
+# all bits set to 1
 MAX_HASHES = 128 * 1024
+assert (MAX_HASHES & (MAX_HASHES - 1)) == 0, "MAX_HASHES must be a power of 2"
 
 gStats = cStatistics()
 
