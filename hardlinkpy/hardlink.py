@@ -110,18 +110,6 @@ def eligible_for_hardlink(
             st1.st_dev == st2.st_dev
         )  # device is the same
     )
-    if None:
-        # if not result:
-        print("\n***\n", st1)
-        print(st2)
-        print("Already hardlinked: %s" % (not is_already_hardlinked(st1=st1, st2=st2)))
-        print("Modes:", st1.st_mode, st2.st_mode)
-        print("UIDs:", st1.st_uid, st2.st_uid)
-        print("GIDs:", st1.st_gid, st2.st_gid)
-        print("SIZE:", st1.st_size, st2.st_size)
-        print("MTIME:", st1.st_mtime, st2.st_mtime)
-        print("Ignore date:", args.notimestamp)
-        print("Device:", st1.st_dev, st2.st_dev)
     return result
 
 
@@ -140,13 +128,13 @@ def are_file_contents_equal(
     if not (file1 and file2):
         print("Error opening file in are_file_contents_equal")
         print("Was attempting to open:")
-        print("file1: %s" % filename1)
-        print("file2: %s" % filename2)
+        print(f"file1: {filename1}")
+        print(f"file2: {filename2}")
         result = False
     else:
         if args.verbose >= 1:
-            print("Comparing: %s" % filename1)
-            print("     to  : %s" % filename2)
+            print(f"Comparing: {filename1}")
+            print(f"     to  : {filename2}")
         buffer_size = 1024 * 1024
         while 1:
             buffer1 = file1.read(buffer_size)
@@ -210,7 +198,7 @@ def hardlink_files(
         if not args.dryrun:
             os.rename(destfile, temp_name)
     except OSError as error:
-        print("Failed to rename: %s to %s" % (destfile, temp_name))
+        print(f"Failed to rename: {destfile} to {temp_name}")
         print(error)
         result = False
     else:
@@ -219,7 +207,7 @@ def hardlink_files(
             if not args.dryrun:
                 os.link(sourcefile, destfile)
         except:  # noqa TODO(fix this bare except)
-            print("Failed to hardlink: %s to %s" % (sourcefile, destfile))
+            print(f"Failed to hardlink: {sourcefile} to {destfile}")
             # Try to recover
             try:
                 os.rename(temp_name, destfile)
@@ -239,8 +227,8 @@ def hardlink_files(
                 if args.dryrun:
                     print("Did NOT link.  Dry run")
                 size = stat_info.st_size
-                print("Linked: %s" % sourcefile)
-                print("     to: %s, saved %s" % (destfile, size))
+                print(f"Linked: {sourcefile}")
+                print(f"    to: {destfile}, saved {size}")
             result = True
     return result
 
@@ -281,7 +269,7 @@ def hardlink_identical_files(
     try:
         stat_info = os.stat(filename)
     except OSError:
-        print("Unable to get stat info for: %s" % filename)
+        print(f"Unable to get stat info for: {filename}")
         return
     if not stat_info:
         # We didn't get the file status info :(
@@ -300,7 +288,7 @@ def hardlink_identical_files(
         # Bump statistics count of regular files found.
         gStats.found_regular_file()
         if args.verbose >= 2:
-            print("File: %s" % filename)
+            print(f"File: {filename}")
         work_file_info = (filename, stat_info)
         if file_hash in file_hashes:
             # We have file(s) that have the same hash as our current file.
@@ -394,9 +382,9 @@ class cStatistics(object):
             for key in sorted(keys):
                 stat_info, file_list = self.previouslyhardlinked[key]
                 size = stat_info.st_size
-                print("Hardlinked together: %s" % key)
+                print(f"Hardlinked together: {key}")
                 for filename in file_list:
-                    print("                   : %s" % filename)
+                    print(f"                   : {filename}")
                 print(
                     "Size per file: %s  Total saved: %s" % (size, size * len(file_list))
                 )
@@ -406,27 +394,29 @@ class cStatistics(object):
                 print("Statistics reflect what would have happened if not a dry run")
             print("Files Hardlinked this run:")
             for (source, dest) in self.hardlinkstats:
-                print("Hardlinked: %s" % source)
-                print("        to: %s" % dest)
+                print(f"Hardlinked: {source}")
+                print(f"        to: {dest}")
             print()
-        print("Directories           : %s" % self.dircount)
-        print("Regular files         : %s" % self.regularfiles)
-        print("Comparisons           : %s" % self.comparisons)
-        print("Hardlinked this run   : %s" % self.hardlinked_thisrun)
+        print(f"Directories           : {self.dircount}")
+        print(f"Regular files         : {self.regularfiles}")
+        print(f"Comparisons           : {self.comparisons}")
+        print(f"Hardlinked this run   : {self.hardlinked_thisrun}")
         print(
-            "Total hardlinks       : %s"
-            % (self.hardlinked_previously + self.hardlinked_thisrun)
+            "Total hardlinks       : {}".format(
+                self.hardlinked_previously + self.hardlinked_thisrun
+            )
         )
         print(
-            "Bytes saved this run  : %s (%s)"
-            % (self.bytes_saved_thisrun, humanize_number(self.bytes_saved_thisrun))
+            "Bytes saved this run  : {} ({})".format(
+                self.bytes_saved_thisrun, humanize_number(self.bytes_saved_thisrun)
+            )
         )
         totalbytes = self.bytes_saved_thisrun + self.bytes_saved_previously
         print(
             "Total bytes saved     : %s (%s)"
             % (totalbytes, humanize_number(totalbytes))
         )
-        print("Total run time        : %s seconds" % (time.time() - self.starttime))
+        print("Total run time        : {} seconds".format(time.time() - self.starttime))
 
 
 def humanize_number(number: int) -> str:
@@ -528,7 +518,7 @@ def parse_args(passed_args: Optional[List[str]] = None) -> argparse.Namespace:
         if not os.path.isdir(dirname):
             parser.print_help()
             print()
-            print("Error: %s is NOT a directory" % dirname)
+            print(f"Error: {dirname} is NOT a directory")
             sys.exit(1)
     return args
 
@@ -564,7 +554,7 @@ def main() -> int:
         directory = directories[-1] + "/"
         del directories[-1]
         if not os.path.isdir(directory):
-            print("%s is NOT a directory!" % directory)
+            print(f"{directory} is NOT a directory!")
         else:
             gStats.found_directory()
             # Loop through all the files in the directory
@@ -589,10 +579,10 @@ def main() -> int:
                         continue
                 if os.path.islink(pathname):
                     if debug1:
-                        print("%s: is a symbolic link, ignoring" % pathname)
+                        print(f"{pathname}: is a symbolic link, ignoring")
                     continue
                 if debug1 and os.path.isdir(pathname):
-                    print("%s is a directory!" % pathname)
+                    print(f"{pathname} is a directory!")
                 hardlink_identical_files(
                     directories=directories, filename=pathname, args=args
                 )
