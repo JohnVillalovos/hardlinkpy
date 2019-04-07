@@ -515,7 +515,6 @@ def parse_args(passed_args: Optional[List[str]] = None) -> argparse.Namespace:
     )
 
     args = parser.parse_args(args=passed_args)
-    print("Verbose", args.verbose)
     args.directories = [
         os.path.abspath(os.path.expanduser(dirname)) for dirname in args.directories
     ]
