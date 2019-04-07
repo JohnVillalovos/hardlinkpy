@@ -52,8 +52,8 @@ import os
 import re
 import stat
 import sys
-from typing import Dict, List, Optional, Tuple
 import time
+from typing import Dict, List, Optional, Tuple
 
 
 # Hash functions
@@ -75,21 +75,15 @@ def hash_value(size: int, time: int, notimestamp: bool) -> int:
 
 # If two files have the same inode and are on the same device then they are
 # already hardlinked.
-def is_already_hardlinked(
-    st1: os.stat_result, st2: os.stat_result
-) -> bool:  # first file's status  # second file's status
-    result = (st1[stat.ST_INO] == st2[stat.ST_INO]) and (  # Inodes equal
-        st1[stat.ST_DEV] == st2[stat.ST_DEV]
-    )  # Devices equal
+def is_already_hardlinked(st1: os.stat_result, st2: os.stat_result) -> bool:
+    result = (st1.st_ino == st2.st_ino) and (st1.st_dev == st2.st_dev)
     return result
 
 
 # Determine if a file is eligibile for hardlinking.  Files will only be
 # considered for hardlinking if this function returns true.
 def eligible_for_hardlink(
-    st1: os.stat_result,
-    st2: os.stat_result,
-    args: argparse.Namespace,  # first file's status  # second file's status
+    st1: os.stat_result, st2: os.stat_result, args: argparse.Namespace
 ) -> bool:
 
     result = (
