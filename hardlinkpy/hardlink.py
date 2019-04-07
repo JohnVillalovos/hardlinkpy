@@ -58,15 +58,15 @@ from typing import Dict, List, Optional, Tuple
 
 # Hash functions
 # Create a hash from a file's size and time values
-def hash_size_time(size: int, time: int) -> int:
-    return (size ^ time) & (MAX_HASHES - 1)
+def hash_size_time(size: int, time: float) -> int:
+    return (size ^ int(time)) & (MAX_HASHES - 1)
 
 
 def hash_size(size: int) -> int:
     return (size) & (MAX_HASHES - 1)
 
 
-def hash_value(size: int, time: int, notimestamp: bool) -> int:
+def hash_value(size: int, time: float, notimestamp: bool) -> int:
     if notimestamp:
         return hash_size(size)
     else:
@@ -90,26 +90,24 @@ def eligible_for_hardlink(
         # Must meet the following
         # criteria:
         (not is_already_hardlinked(st1, st2))
-        and (st1[stat.ST_SIZE] == st2[stat.ST_SIZE])  # NOT already hard linked
-        and (st1[stat.ST_SIZE] != 0)  # size is the same
-        and (  # size is not zero
-            (st1[stat.ST_MODE] == st2[stat.ST_MODE]) or (args.contentonly)
-        )
+        and (st1.st_size == st2.st_size)  # NOT already hard linked
+        and (st1.st_size != 0)  # size is the same
+        and ((st1.st_mode == st2.st_mode) or (args.contentonly))  # size is not zero
         and (  # file mode is the same
-            (st1[stat.ST_UID] == st2[stat.ST_UID])
+            (st1.st_uid == st2.st_uid)
             or (args.contentonly)  # owner user id is the same
         )
         and (  # OR we are comparing content only
-            (st1[stat.ST_GID] == st2[stat.ST_GID])
+            (st1.st_gid == st2.st_gid)
             or (args.contentonly)  # owner group id is the same
         )
         and (  # OR we are comparing content only
-            (st1[stat.ST_MTIME] == st2[stat.ST_MTIME])
+            (st1.st_mtime == st2.st_mtime)
             or (args.notimestamp)  # modified time is the same
             or (args.contentonly)  # OR date hashing is off
         )
         and (  # OR we are comparing content only
-            st1[stat.ST_DEV] == st2[stat.ST_DEV]
+            st1.st_dev == st2.st_dev
         )  # device is the same
     )
     if None:
@@ -117,13 +115,13 @@ def eligible_for_hardlink(
         print("\n***\n", st1)
         print(st2)
         print("Already hardlinked: %s" % (not is_already_hardlinked(st1, st2)))
-        print("Modes:", st1[stat.ST_MODE], st2[stat.ST_MODE])
-        print("UIDs:", st1[stat.ST_UID], st2[stat.ST_UID])
-        print("GIDs:", st1[stat.ST_GID], st2[stat.ST_GID])
-        print("SIZE:", st1[stat.ST_SIZE], st2[stat.ST_SIZE])
-        print("MTIME:", st1[stat.ST_MTIME], st2[stat.ST_MTIME])
+        print("Modes:", st1.st_mode, st2.st_mode)
+        print("UIDs:", st1.st_uid, st2.st_uid)
+        print("GIDs:", st1.st_gid, st2.st_gid)
+        print("SIZE:", st1.st_size, st2.st_size)
+        print("MTIME:", st1.st_mtime, st2.st_mtime)
         print("Ignore date:", args.notimestamp)
-        print("Device:", st1[stat.ST_DEV], st2[stat.ST_DEV])
+        print("Device:", st1.st_dev, st2.st_dev)
     return result
 
 
@@ -231,7 +229,7 @@ def hardlink_files(
             if args.verbose >= 1:
                 if args.dryrun:
                     print("Did NOT link.  Dry run")
-                size = stat_info[stat.ST_SIZE]
+                size = stat_info.st_size
                 print("Linked: %s" % sourcefile)
                 print("     to: %s, saved %s" % (destfile, size))
             result = True
@@ -281,16 +279,14 @@ def hardlink_identical_files(
         return
 
     # Is it a directory?
-    if stat.S_ISDIR(stat_info[stat.ST_MODE]):
+    if stat.S_ISDIR(stat_info.st_mode):
         # If it is a directory then add it to the list of directories.
         directories.append(filename)
     # Is it a regular file?
-    elif stat.S_ISREG(stat_info[stat.ST_MODE]):
+    elif stat.S_ISREG(stat_info.st_mode):
         # Create the hash for the file.
         file_hash = hash_value(
-            stat_info[stat.ST_SIZE],
-            stat_info[stat.ST_MTIME],
-            args.notimestamp or args.contentonly,
+            stat_info.st_size, stat_info.st_mtime, args.notimestamp or args.contentonly
         )
         # Bump statistics count of regular files found.
         gStats.found_regular_file()
@@ -356,7 +352,7 @@ class cStatistics(object):
     def found_hardlink(
         self, sourcefile: str, destfile: str, stat_info: os.stat_result
     ) -> None:
-        filesize = stat_info[stat.ST_SIZE]
+        filesize = stat_info.st_size
         self.hardlinked_previously = self.hardlinked_previously + 1
         self.bytes_saved_previously = self.bytes_saved_previously + filesize
         if sourcefile not in self.previouslyhardlinked:
@@ -367,7 +363,7 @@ class cStatistics(object):
     def did_hardlink(
         self, sourcefile: str, destfile: str, stat_info: os.stat_result
     ) -> None:
-        filesize = stat_info[stat.ST_SIZE]
+        filesize = stat_info.st_size
         self.hardlinked_thisrun = self.hardlinked_thisrun + 1
         self.bytes_saved_thisrun = self.bytes_saved_thisrun + filesize
         self.hardlinkstats.append((sourcefile, destfile))
@@ -381,7 +377,7 @@ class cStatistics(object):
             print("Files Previously Hardlinked:")
             for key in sorted(keys):
                 stat_info, file_list = self.previouslyhardlinked[key]
-                size = stat_info[stat.ST_SIZE]
+                size = stat_info.st_size
                 print("Hardlinked together: %s" % key)
                 for filename in file_list:
                     print("                   : %s" % filename)
