@@ -1,0 +1,4 @@
+.tox/
+hardlinkpy.egg-info/
+
+*.swp
