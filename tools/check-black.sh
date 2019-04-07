@@ -2,7 +2,7 @@
 
 set -u
 
-if ! black --check hardlinkpy; then
+if ! black --check --target-version py36 .; then
     echo ""
     echo ""
     echo "************************************"

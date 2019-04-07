@@ -200,7 +200,9 @@ def are_files_hardlinkable(
 
 
 # Hardlink two files together
-def hardlink_files(sourcefile: str, destfile: str, stat_info: os.stat_result, args: argparse.Namespace) -> bool:
+def hardlink_files(
+    sourcefile: str, destfile: str, stat_info: os.stat_result, args: argparse.Namespace
+) -> bool:
     # rename the destination file to save it
     temp_name = destfile + ".$$$___cleanit___$$$"
     try:
@@ -221,7 +223,9 @@ def hardlink_files(sourcefile: str, destfile: str, stat_info: os.stat_result, ar
             try:
                 os.rename(temp_name, destfile)
             except:  # noqa TODO(fix this bare except)
-                print("BAD BAD - failed to rename back %s to %s" % (temp_name, destfile))
+                print(
+                    "BAD BAD - failed to rename back %s to %s" % (temp_name, destfile)
+                )
             result = False
         else:
             # hard link succeeded
@@ -240,7 +244,9 @@ def hardlink_files(sourcefile: str, destfile: str, stat_info: os.stat_result, ar
     return result
 
 
-def hardlink_identical_files(directories: List[str], filename: str, args:argparse.Namespace) -> None:
+def hardlink_identical_files(
+    directories: List[str], filename: str, args: argparse.Namespace
+) -> None:
     """hardlink identical files
 
     The purpose of this function is to hardlink files together if the files are
@@ -336,9 +342,13 @@ class cStatistics(object):
         # hardlinks that are already existing
         self.bytes_saved_thisrun = 0  # bytes saved by hardlinking this run
         self.bytes_saved_previously = 0  # bytes saved by previous hardlinks
-        self.hardlinkstats: List[Tuple[str, str]] = []  # list of files hardlinked this run
+        self.hardlinkstats: List[
+            Tuple[str, str]
+        ] = []  # list of files hardlinked this run
         self.starttime = time.time()  # track how long it takes
-        self.previouslyhardlinked: Dict[str, Tuple[os.stat_result, List[str]]] = {}  # list of files hardlinked previously
+        self.previouslyhardlinked: Dict[
+            str, Tuple[os.stat_result, List[str]]
+        ] = {}  # list of files hardlinked previously
 
     def found_directory(self) -> None:
         self.dircount = self.dircount + 1
@@ -349,7 +359,9 @@ class cStatistics(object):
     def did_comparison(self) -> None:
         self.comparisons = self.comparisons + 1
 
-    def found_hardlink(self, sourcefile: str, destfile: str, stat_info: os.stat_result) -> None:
+    def found_hardlink(
+        self, sourcefile: str, destfile: str, stat_info: os.stat_result
+    ) -> None:
         filesize = stat_info[stat.ST_SIZE]
         self.hardlinked_previously = self.hardlinked_previously + 1
         self.bytes_saved_previously = self.bytes_saved_previously + filesize
@@ -358,7 +370,9 @@ class cStatistics(object):
         else:
             self.previouslyhardlinked[sourcefile][1].append(destfile)
 
-    def did_hardlink(self, sourcefile: str, destfile: str, stat_info: os.stat_result) -> None:
+    def did_hardlink(
+        self, sourcefile: str, destfile: str, stat_info: os.stat_result
+    ) -> None:
         filesize = stat_info[stat.ST_SIZE]
         self.hardlinked_thisrun = self.hardlinked_thisrun + 1
         self.bytes_saved_thisrun = self.bytes_saved_thisrun + filesize
@@ -419,7 +433,7 @@ def humanize_number(number: int) -> str:
     return "%d bytes" % number
 
 
-def parse_args(passed_args: Optional[List[str]]=None) -> argparse.Namespace:
+def parse_args(passed_args: Optional[List[str]] = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser()  # usage=usage)
     parser.add_argument(
         "directories", nargs="+", metavar="DIRECTORY", help="Directory name"

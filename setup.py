@@ -13,11 +13,7 @@ setuptools.setup(
     author="John L. Villalovos",
     author_email="john@sodarock.com",
     description="A program to hardlink identical files together",
-    entry_points={
-        'console_scripts': [
-            'hardlinkpy=hardlinkpy.hardlink:main',
-        ],
-    },
+    entry_points={"console_scripts": ["hardlinkpy=hardlinkpy.hardlink:main"]},
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/JohnVillalovos/hardlinkpy",
