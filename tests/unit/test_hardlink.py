@@ -216,8 +216,8 @@ class TestAreFilesHardlinkable(testtools.TestCase):
         mock_are_equal.return_value = True
         self.assertTrue(
             hardlink.are_files_hardlinkable(
-                file_info_1=(filename1, st_file_1),
-                file_info_2=(filename2, st_file_2),
+                file_info_1=hardlink.FileInfo(filename1, st_file_1),
+                file_info_2=hardlink.FileInfo(filename2, st_file_2),
                 args=self.args,
             )
         )
@@ -236,8 +236,8 @@ class TestAreFilesHardlinkable(testtools.TestCase):
         mock_are_equal.return_value = True
         self.assertFalse(
             hardlink.are_files_hardlinkable(
-                file_info_1=(filename1, st_file_1),
-                file_info_2=(filename2, st_file_2),
+                file_info_1=hardlink.FileInfo(filename1, st_file_1),
+                file_info_2=hardlink.FileInfo(filename2, st_file_2),
                 args=self.args,
             )
         )
@@ -256,8 +256,8 @@ class TestAreFilesHardlinkable(testtools.TestCase):
         mock_are_equal.return_value = True
         self.assertTrue(
             hardlink.are_files_hardlinkable(
-                file_info_1=(filename1, st_file_1),
-                file_info_2=(filename2, st_file_2),
+                file_info_1=hardlink.FileInfo(filename1, st_file_1),
+                file_info_2=hardlink.FileInfo(filename2, st_file_2),
                 args=self.args,
             )
         )
@@ -275,8 +275,8 @@ class TestAreFilesHardlinkable(testtools.TestCase):
         mock_are_equal.return_value = True
         self.assertTrue(
             hardlink.are_files_hardlinkable(
-                file_info_1=(filename1, st_file_1),
-                file_info_2=(filename2, st_file_2),
+                file_info_1=hardlink.FileInfo(filename1, st_file_1),
+                file_info_2=hardlink.FileInfo(filename2, st_file_2),
                 args=self.args,
             )
         )
@@ -284,8 +284,8 @@ class TestAreFilesHardlinkable(testtools.TestCase):
         self.args.samename = True
         self.assertFalse(
             hardlink.are_files_hardlinkable(
-                file_info_1=(filename1, st_file_1),
-                file_info_2=(filename2, st_file_2),
+                file_info_1=hardlink.FileInfo(filename1, st_file_1),
+                file_info_2=hardlink.FileInfo(filename2, st_file_2),
                 args=self.args,
             )
         )
