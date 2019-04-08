@@ -85,29 +85,41 @@ def eligible_for_hardlink(
     *, st1: os.stat_result, st2: os.stat_result, args: argparse.Namespace
 ) -> bool:
 
+    # Must meet the following
+    # criteria:
+    # * NOT already hard linked to each other
+    # * sizes are equal
+    # * size is greater than or equal to args.min_size
+    # * file modes are equal OR we are comparing content only
+    # * owner user ids are equal OR we are comparing content only
+    # * owner group ids are equal OR we are comparing content only
+    # * modified times are equal OR date hashing is off OR we are comparing
+    #   content only
+    # * device is the same
+
+    if is_already_hardlinked(st1=st1, st2=st2):
+        return False
+
+    if st1.st_size < args.min_size:
+        return False
+
     result = (
-        # Must meet the following
-        # criteria:
-        (not is_already_hardlinked(st1=st1, st2=st2))
-        and (st1.st_size == st2.st_size)  # NOT already hard linked
-        and (st1.st_size != 0)  # size is the same
-        and ((st1.st_mode == st2.st_mode) or (args.contentonly))  # size is not zero
+        (st1.st_size == st2.st_size)  # size is the same
+        and ((st1.st_mode == st2.st_mode) or (args.contentonly))
         and (  # file mode is the same
-            (st1.st_uid == st2.st_uid)
-            or (args.contentonly)  # owner user id is the same
+            (st1.st_uid == st2.st_uid)  # owner user id is the same
+            or (args.contentonly)  # OR we are comparing content only
         )
-        and (  # OR we are comparing content only
-            (st1.st_gid == st2.st_gid)
-            or (args.contentonly)  # owner group id is the same
+        and (
+            (st1.st_gid == st2.st_gid)  # owner group id is the same
+            or (args.contentonly)  # OR we are comparing content only
         )
-        and (  # OR we are comparing content only
-            (st1.st_mtime == st2.st_mtime)
-            or (args.notimestamp)  # modified time is the same
-            or (args.contentonly)  # OR date hashing is off
+        and (
+            (st1.st_mtime == st2.st_mtime)  # modified time is the same
+            or (args.notimestamp)  # OR date hashing is off
+            or (args.contentonly)  # OR we are comparing content only
         )
-        and (  # OR we are comparing content only
-            st1.st_dev == st2.st_dev
-        )  # device is the same
+        and (st1.st_dev == st2.st_dev)  # device is the same
     )
     return result
 
@@ -481,6 +493,14 @@ def parse_args(passed_args: Optional[List[str]] = None) -> argparse.Namespace:
     )
 
     parser.add_argument(
+        "-s",
+        "--min-size",
+        help="Minimum file size to perform a hard link. Must be 1 or greater",
+        type=int,
+        default=1,
+    )
+
+    parser.add_argument(
         "-v",
         "--verbose",
         help="Verbosity level. Can be used multiple times.",
@@ -502,6 +522,8 @@ def parse_args(passed_args: Optional[List[str]] = None) -> argparse.Namespace:
     )
 
     args = parser.parse_args(args=passed_args)
+    if args.min_size < 1:
+        parser.error("-s/--min-size must be 1 or greater")
     args.directories = [
         os.path.abspath(os.path.expanduser(dirname)) for dirname in args.directories
     ]
