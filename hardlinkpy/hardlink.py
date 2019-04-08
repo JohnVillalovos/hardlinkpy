@@ -597,6 +597,11 @@ def main() -> int:
                     continue
                 if debug1 and dir_entry.is_dir():
                     print(f"{pathname} is a directory!")
+
+                if dir_entry.stat(follow_symlinks=False).st_size < args.min_size:
+                    if debug1:
+                        print(f"{pathname}: Size is not large enough, ignoring")
+                    continue
                 hardlink_identical_files(
                     directories=directories, dir_entry=dir_entry, args=args
                 )
