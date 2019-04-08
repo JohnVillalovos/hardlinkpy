@@ -153,32 +153,33 @@ def are_file_contents_equal(
     **!! This function assumes that the file sizes of the two files are
     equal.
     """
+
     # Open our two files
-    file1 = open(filename1, "rb")
-    file2 = open(filename2, "rb")
-    # Make sure open succeeded
-    if not (file1 and file2):
-        print("Error opening file in are_file_contents_equal")
-        print("Was attempting to open:")
-        print(f"file1: {filename1}")
-        print(f"file2: {filename2}")
-        result = False
-    else:
-        if args.verbose >= 1:
-            print(f"Comparing: {filename1}")
-            print(f"     to  : {filename2}")
-        buffer_size = 1024 * 1024
-        while 1:
-            buffer1 = file1.read(buffer_size)
-            buffer2 = file2.read(buffer_size)
-            if buffer1 != buffer2:
-                result = False
-                break
-            if not buffer1:
-                result = True
-                break
-        gStats.did_comparison()
-    return result
+    with open(filename1, "rb") as file1:
+        with open(filename2, "rb") as file2:
+            # Make sure open succeeded
+            if not (file1 and file2):
+                print("Error opening file in are_file_contents_equal")
+                print("Was attempting to open:")
+                print(f"file1: {filename1}")
+                print(f"file2: {filename2}")
+                return False
+
+            gStats.did_comparison()
+            if args.verbose >= 1:
+                print(f"Comparing: {filename1}")
+                print(f"     to  : {filename2}")
+            buffer_size = 1024 * 1024
+            while True:
+                buffer1 = file1.read(buffer_size)
+                buffer2 = file2.read(buffer_size)
+                if buffer1 != buffer2:
+                    return False
+
+                if not buffer1:
+                    return True
+    # We shouldn't get here
+    return False
 
 
 # Determines if two files should be hard linked together.
