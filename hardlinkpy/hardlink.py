@@ -181,28 +181,19 @@ def are_files_hardlinkable(
     stat_info_1 = file_info_1[1]
     filename2 = file_info_2[0]
     stat_info_2 = file_info_2[1]
+
     # See if the files are eligible for hardlinking
-    if eligible_for_hardlink(st1=stat_info_1, st2=stat_info_2, args=args):
-        # Now see if the contents of the file are the same.  If they are then
-        # these two files should be hardlinked.
-        if not args.samename:
-            # By default we don't care if the filenames are equal
-            result = are_file_contents_equal(
-                filename1=filename1, filename2=filename2, args=args
-            )
-        else:
-            # Make sure the filenames are the same, if so then compare content
-            basename1 = os.path.basename(filename1)
-            basename2 = os.path.basename(filename2)
-            if basename1 == basename2:
-                result = are_file_contents_equal(
-                    filename1=filename1, filename2=filename2, args=args
-                )
-            else:
-                result = False
-    else:
-        result = False
-    return result
+    if not eligible_for_hardlink(st1=stat_info_1, st2=stat_info_2, args=args):
+        return False
+
+    if args.samename:
+        # Check if the base filenames are the same
+        basename1 = os.path.basename(filename1)
+        basename2 = os.path.basename(filename2)
+        if basename1 != basename2:
+            return False
+
+    return are_file_contents_equal(filename1=filename1, filename2=filename2, args=args)
 
 
 # Hardlink two files together

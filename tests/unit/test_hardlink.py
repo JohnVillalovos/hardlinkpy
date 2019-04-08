@@ -197,6 +197,100 @@ class TestAlreadyHardlinked(testtools.TestCase):
         self.assertFalse(hardlink.is_already_hardlinked(st1=st_file_1, st2=st_file_2))
 
 
+class TestAreFilesHardlinkable(testtools.TestCase):
+    def setUp(self) -> None:
+        super().setUp()
+        cmd_line = ["/tmp/hardlinkpy/directory"]
+        # Make it so it doesn't care if directory doesn't exist
+        with mock.patch("os.path.isdir", lambda path: True):
+            self.args = hardlink.parse_args(passed_args=cmd_line)
+
+    @mock.patch("hardlinkpy.hardlink.are_file_contents_equal", autospec=True)
+    def test_are_files_hardlinkable(self, mock_are_equal: mock.MagicMock) -> None:
+        filename1 = "/tmp/hardlinkpy/directory/file1"
+        filename2 = "/tmp/hardlinkpy/directory/file2"
+
+        st_file_1 = make_st_result(st_ino=100)
+        st_file_2 = make_st_result(st_ino=101)
+
+        mock_are_equal.return_value = True
+        self.assertTrue(
+            hardlink.are_files_hardlinkable(
+                file_info_1=(filename1, st_file_1),
+                file_info_2=(filename2, st_file_2),
+                args=self.args,
+            )
+        )
+
+    @mock.patch("hardlinkpy.hardlink.are_file_contents_equal", autospec=True)
+    def test_are_files_hardlinkable_not_eligible(
+        self, mock_are_equal: mock.MagicMock
+    ) -> None:
+        filename1 = "/tmp/hardlinkpy/directory/file1"
+        filename2 = "/tmp/hardlinkpy/directory/file2"
+
+        # File sizes differ, so not eligible for hardlinking
+        st_file_1 = make_st_result(st_ino=100, st_size=2500)
+        st_file_2 = make_st_result(st_ino=101, st_size=1500)
+
+        mock_are_equal.return_value = True
+        self.assertFalse(
+            hardlink.are_files_hardlinkable(
+                file_info_1=(filename1, st_file_1),
+                file_info_2=(filename2, st_file_2),
+                args=self.args,
+            )
+        )
+
+    @mock.patch("hardlinkpy.hardlink.are_file_contents_equal", autospec=True)
+    def test_are_files_hardlinkable_samename(
+        self, mock_are_equal: mock.MagicMock
+    ) -> None:
+        filename1 = "/tmp/hardlinkpy/directory/dir1/file1"
+        filename2 = "/tmp/hardlinkpy/directory/dir2/file1"
+
+        st_file_1 = make_st_result(st_ino=100)
+        st_file_2 = make_st_result(st_ino=101)
+
+        self.args.samename = True
+        mock_are_equal.return_value = True
+        self.assertTrue(
+            hardlink.are_files_hardlinkable(
+                file_info_1=(filename1, st_file_1),
+                file_info_2=(filename2, st_file_2),
+                args=self.args,
+            )
+        )
+
+    @mock.patch("hardlinkpy.hardlink.are_file_contents_equal", autospec=True)
+    def test_are_files_hardlinkable_not_samename(
+        self, mock_are_equal: mock.MagicMock
+    ) -> None:
+        filename1 = "/tmp/hardlinkpy/directory/file1"
+        filename2 = "/tmp/hardlinkpy/directory/file2"
+
+        st_file_1 = make_st_result(st_ino=100)
+        st_file_2 = make_st_result(st_ino=101)
+
+        mock_are_equal.return_value = True
+        self.assertTrue(
+            hardlink.are_files_hardlinkable(
+                file_info_1=(filename1, st_file_1),
+                file_info_2=(filename2, st_file_2),
+                args=self.args,
+            )
+        )
+
+        self.args.samename = True
+        self.assertFalse(
+            hardlink.are_files_hardlinkable(
+                file_info_1=(filename1, st_file_1),
+                file_info_2=(filename2, st_file_2),
+                args=self.args,
+            )
+        )
+
+
 def make_st_result(
     *,
     st_mode: int = 0o100664,
