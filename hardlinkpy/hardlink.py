@@ -109,7 +109,7 @@ def eligible_for_hardlink(
     if st1.st_size < args.min_size:
         return False
 
-    if not args.contentonly:
+    if not args.content_only:
         # * file modes are equal
         if not (st1.st_mode == st2.st_mode):
             return False
@@ -122,7 +122,7 @@ def eligible_for_hardlink(
         if not (st1.st_gid == st2.st_gid):
             return False
 
-    if not args.contentonly and not args.notimestamp:
+    if not args.content_only and not args.notimestamp:
         # * modified times are equal
         if not (st1.st_mtime == st2.st_mtime):
             return False
@@ -207,7 +207,7 @@ def hardlink_files(
     # rename the destination file to save it
     temp_name = destfile + ".$$$___cleanit___$$$"
     try:
-        if not args.dryrun:
+        if not args.dry_run:
             os.rename(destfile, temp_name)
     except OSError as error:
         print(f"Failed to rename: {destfile} to {temp_name}")
@@ -216,7 +216,7 @@ def hardlink_files(
     else:
         # Now link the sourcefile to the destination file
         try:
-            if not args.dryrun:
+            if not args.dry_run:
                 os.link(sourcefile, destfile)
         except:  # noqa TODO(fix this bare except)
             print(f"Failed to hardlink: {sourcefile} to {destfile}")
@@ -231,12 +231,12 @@ def hardlink_files(
         else:
             # hard link succeeded
             # Delete the renamed version since we don't need it.
-            if not args.dryrun:
+            if not args.dry_run:
                 os.unlink(temp_name)
             # update our stats
             gStats.did_hardlink(sourcefile, destfile, stat_info)
             if args.verbose >= 1:
-                if args.dryrun:
+                if args.dry_run:
                     print("Did NOT link.  Dry run")
                 size = stat_info.st_size
                 print(f"Linked: {sourcefile}")
@@ -287,7 +287,7 @@ def hardlink_identical_files(
         stat_info = dir_entry.stat(follow_symlinks=False)
         # Create the hash for the file.
         file_hash = hash_value(
-            stat_info.st_size, stat_info.st_mtime, args.notimestamp or args.contentonly
+            stat_info.st_size, stat_info.st_mtime, args.notimestamp or args.content_only
         )
         # Bump statistics count of regular files found.
         gStats.found_regular_file()
@@ -394,7 +394,7 @@ class cStatistics(object):
                 )
             print()
         if self.hardlinkstats:
-            if args.dryrun:
+            if args.dry_run:
                 print("Statistics reflect what would have happened if not a dry run")
             print("Files Hardlinked this run:")
             for (source, dest) in self.hardlinkstats:
@@ -448,11 +448,7 @@ def parse_args(passed_args: Optional[List[str]] = None) -> argparse.Namespace:
     )
 
     parser.add_argument(
-        "-n",
-        "--dry-run",
-        help="Do NOT actually hardlink files",
-        action="store_true",
-        dest="dryrun",
+        "-n", "--dry-run", help="Do NOT actually hardlink files", action="store_true"
     )
 
     parser.add_argument(
@@ -484,7 +480,6 @@ def parse_args(passed_args: Optional[List[str]] = None) -> argparse.Namespace:
         "--content-only",
         help="Only file contents have to match",
         action="store_true",
-        dest="contentonly",
     )
 
     parser.add_argument(

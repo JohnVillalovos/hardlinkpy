@@ -87,8 +87,8 @@ class TestEligibleForHardlink(testtools.TestCase):
             hardlink.eligible_for_hardlink(st1=st_file_1, st2=st_file_2, args=self.args)
         )
 
-        self.args.contentonly = True
-        # Different file modes, contentonly=True, should be True
+        self.args.content_only = True
+        # Different file modes, content_only=True, should be True
         self.assertTrue(
             hardlink.eligible_for_hardlink(st1=st_file_1, st2=st_file_2, args=self.args)
         )
@@ -104,8 +104,8 @@ class TestEligibleForHardlink(testtools.TestCase):
             hardlink.eligible_for_hardlink(st1=st_file_1, st2=st_file_2, args=self.args)
         )
 
-        self.args.contentonly = True
-        # Different UIDs, contentonly=True, should be True
+        self.args.content_only = True
+        # Different UIDs, content_only=True, should be True
         self.assertTrue(
             hardlink.eligible_for_hardlink(st1=st_file_1, st2=st_file_2, args=self.args)
         )
@@ -121,8 +121,8 @@ class TestEligibleForHardlink(testtools.TestCase):
             hardlink.eligible_for_hardlink(st1=st_file_1, st2=st_file_2, args=self.args)
         )
 
-        self.args.contentonly = True
-        # Different GIDs, contentonly=True, should be True
+        self.args.content_only = True
+        # Different GIDs, content_only=True, should be True
         self.assertTrue(
             hardlink.eligible_for_hardlink(st1=st_file_1, st2=st_file_2, args=self.args)
         )
@@ -138,16 +138,16 @@ class TestEligibleForHardlink(testtools.TestCase):
             hardlink.eligible_for_hardlink(st1=st_file_1, st2=st_file_2, args=self.args)
         )
 
-        self.args.contentonly = True
+        self.args.content_only = True
         self.args.notimestamp = False
-        # Different mtimes, contentonly=True, should be True
+        # Different mtimes, content_only=True, should be True
         self.assertTrue(
             hardlink.eligible_for_hardlink(st1=st_file_1, st2=st_file_2, args=self.args)
         )
 
-        self.args.contentonly = False
+        self.args.content_only = False
         self.args.notimestamp = True
-        # Different mtimes, contentonly=True, should be True
+        # Different mtimes, content_only=True, should be True
         self.assertTrue(
             hardlink.eligible_for_hardlink(st1=st_file_1, st2=st_file_2, args=self.args)
         )
