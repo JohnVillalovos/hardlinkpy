@@ -55,18 +55,24 @@ import sys
 import time
 from typing import Dict, List, Optional, Tuple
 
+# MAX_HASHES must be a power of 2, so that MAX_HASHES - 1 will be a value with
+# all bits set to 1
+MAX_HASHES = 2 ** 17
+assert (MAX_HASHES & (MAX_HASHES - 1)) == 0, "MAX_HASHES must be a power of 2"
+MAX_HASHES_MINUS_1 = MAX_HASHES - 1
+
 
 # Hash functions
 # Create a hash from a file's size and time values
 def hash_size_time(*, size: int, time: float) -> int:
-    return (size ^ int(time)) & (MAX_HASHES - 1)
+    return (size ^ int(time)) & (MAX_HASHES_MINUS_1)
 
 
 def hash_size(size: int) -> int:
-    return (size) & (MAX_HASHES - 1)
+    return (size) & (MAX_HASHES_MINUS_1)
 
 
-def hash_value(size: int, time: float, notimestamp: bool) -> int:
+def hash_value(*, size: int, time: float, notimestamp: bool) -> int:
     if notimestamp:
         return hash_size(size)
     else:
@@ -285,7 +291,9 @@ def hardlink_identical_files(
     if stat.S_ISREG(stat_info.st_mode):
         # Create the hash for the file.
         file_hash = hash_value(
-            stat_info.st_size, stat_info.st_mtime, args.notimestamp or args.content_only
+            size=stat_info.st_size,
+            time=stat_info.st_mtime,
+            notimestamp=(args.notimestamp or args.content_only),
         )
         # Bump statistics count of regular files found.
         gStats.found_regular_file()
@@ -527,11 +535,6 @@ def parse_args(passed_args: Optional[List[str]] = None) -> argparse.Namespace:
 # Start of global declarations
 debug = None
 debug1 = None
-
-# MAX_HASHES must be a power of 2, so that MAX_HASHES - 1 will be a value with
-# all bits set to 1
-MAX_HASHES = 128 * 1024
-assert (MAX_HASHES & (MAX_HASHES - 1)) == 0, "MAX_HASHES must be a power of 2"
 
 gStats = cStatistics()
 
