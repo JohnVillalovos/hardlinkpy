@@ -511,14 +511,6 @@ def parse_args(passed_args: Optional[List[str]] = None) -> argparse.Namespace:
     )
 
     parser.add_argument(
-        "-v",
-        "--verbose",
-        help="Verbosity level. Can be used multiple times.",
-        action="count",
-        default=1,
-    )
-
-    parser.add_argument(
         "-x",
         "--exclude",
         help=(
@@ -531,7 +523,23 @@ def parse_args(passed_args: Optional[List[str]] = None) -> argparse.Namespace:
         default=[],
     )
 
+    verbosity_group = parser.add_mutually_exclusive_group()
+    verbosity_group.add_argument(
+        "-v",
+        "--verbose",
+        help="Verbosity level. Can be used multiple times.",
+        action="count",
+        default=1,
+    )
+
+    verbosity_group.add_argument(
+        "--quiet", help="Minimizes output", action="store_true"
+    )
+
     args = parser.parse_args(args=passed_args)
+    if args.quiet:
+        args.verbose = 0
+        args.printstats = False
     if args.min_size < 1:
         parser.error("-s/--min-size must be 1 or greater")
     args.directories = [
@@ -557,9 +565,9 @@ file_hashes: Dict[int, List[FileInfo]] = {}
 VERSION = "0.06 - 2019-04-07 (07-Apr-2019)"
 
 
-def main() -> int:
+def main(passed_args: Optional[List[str]] = None) -> int:
     # Parse our argument list and get our list of directories
-    args = parse_args()
+    args = parse_args(passed_args=passed_args)
     # Compile up our regexes ahead of time
     MIRROR_PL_REGEX = re.compile(r"^\.in\.")
     RSYNC_TEMP_REGEX = re.compile((r"^\..*\.\?{6,6}$"))

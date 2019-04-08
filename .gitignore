@@ -2,6 +2,8 @@
 .stestr/
 .tox/
 __pycache__/
+cover/
 hardlinkpy.egg-info/
 
+.coverage
 *.swp
