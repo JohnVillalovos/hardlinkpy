@@ -445,7 +445,6 @@ def parse_args(passed_args: Optional[List[str]] = None) -> argparse.Namespace:
         help="Filenames have to be identical",
         action="store_true",
         dest="samename",
-        default=False,
     )
 
     parser.add_argument(
@@ -454,7 +453,6 @@ def parse_args(passed_args: Optional[List[str]] = None) -> argparse.Namespace:
         help="Do NOT actually hardlink files",
         action="store_true",
         dest="dryrun",
-        default=False,
     )
 
     parser.add_argument(
@@ -463,7 +461,6 @@ def parse_args(passed_args: Optional[List[str]] = None) -> argparse.Namespace:
         help="Print previously created hardlinks",
         action="store_true",
         dest="printprevious",
-        default=False,
     )
 
     parser.add_argument(
@@ -472,7 +469,6 @@ def parse_args(passed_args: Optional[List[str]] = None) -> argparse.Namespace:
         help="Do not print the statistics",
         action="store_false",
         dest="printstats",
-        default=True,
     )
 
     parser.add_argument(
@@ -481,7 +477,6 @@ def parse_args(passed_args: Optional[List[str]] = None) -> argparse.Namespace:
         help="File modification times do NOT have to be identical",
         action="store_true",
         dest="notimestamp",
-        default=False,
     )
 
     parser.add_argument(
@@ -490,7 +485,6 @@ def parse_args(passed_args: Optional[List[str]] = None) -> argparse.Namespace:
         help="Only file contents have to match",
         action="store_true",
         dest="contentonly",
-        default=False,
     )
 
     parser.add_argument(
