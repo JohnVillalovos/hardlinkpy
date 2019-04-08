@@ -50,6 +50,7 @@ from __future__ import print_function
 import argparse
 import os
 import re
+import stat
 import sys
 import time
 from typing import Dict, List, Optional, Tuple
@@ -246,7 +247,7 @@ def hardlink_files(
 
 
 def hardlink_identical_files(
-    *, directories: List[str], dir_entry: os.DirEntry, args: argparse.Namespace
+    *, dir_entry: os.DirEntry, args: argparse.Namespace
 ) -> None:
     """hardlink identical files
 
@@ -279,12 +280,9 @@ def hardlink_identical_files(
         if re.search(exclude, dir_entry.path):
             return
 
-    # Is it a directory?
-    if dir_entry.is_dir(follow_symlinks=False):
-        directories.append(dir_entry.path)
+    stat_info = dir_entry.stat(follow_symlinks=False)
     # Is it a regular file?
-    elif dir_entry.is_file(follow_symlinks=False):
-        stat_info = dir_entry.stat(follow_symlinks=False)
+    if stat.S_ISREG(stat_info.st_mode):
         # Create the hash for the file.
         file_hash = hash_value(
             stat_info.st_size, stat_info.st_mtime, args.notimestamp or args.content_only
@@ -584,16 +582,16 @@ def main() -> int:
                     if debug1:
                         print(f"{pathname}: is a symbolic link, ignoring")
                     continue
-                if debug1 and dir_entry.is_dir():
-                    print(f"{pathname} is a directory!")
+
+                if dir_entry.is_dir():
+                    directories.append(pathname)
+                    continue
 
                 if dir_entry.stat(follow_symlinks=False).st_size < args.min_size:
                     if debug1:
                         print(f"{pathname}: Size is not large enough, ignoring")
                     continue
-                hardlink_identical_files(
-                    directories=directories, dir_entry=dir_entry, args=args
-                )
+                hardlink_identical_files(dir_entry=dir_entry, args=args)
     if args.printstats:
         gStats.print_stats(args)
     return 0
