@@ -6,7 +6,7 @@ import testtools
 import hardlinkpy.hardlink as hardlink
 
 
-class TestHardlink(testtools.TestCase):
+class TestHash(testtools.TestCase):
     def test_maxhashes_power_of_2(self) -> None:
         # MAX_HASHES must be a power of 2, so that MAX_HASHES - 1 will be a
         # value with all bits set to 1
@@ -25,8 +25,12 @@ class TestHardlink(testtools.TestCase):
         self.assertEqual(12, hardlink.hash_size_time(size=12, time=0.0))
         self.assertEqual(44, hardlink.hash_size_time(size=12, time=32.4))
 
+    def test_hash_value(self) -> None:
+        self.assertEqual(12, hardlink.hash_value(size=12, time=32.4, notimestamp=True))
+        self.assertEqual(44, hardlink.hash_value(size=12, time=32.4, notimestamp=False))
 
-class TestEligibleForHardline(testtools.TestCase):
+
+class TestEligibleForHardlink(testtools.TestCase):
     def setUp(self) -> None:
         super().setUp()
         cmd_line = ["/tmp/hardlinkpy/directory"]
@@ -77,6 +81,104 @@ class TestEligibleForHardline(testtools.TestCase):
         # Files that are already hardlinked since same inode
         self.assertFalse(
             hardlink.eligible_for_hardlink(st1=st_file_1, st2=st_file_1, args=self.args)
+        )
+
+    def test_eligibile_for_hardlink_different_sizes(self) -> None:
+
+        # Different inodes and different sizes
+        st_file_1 = self.make_st_result(st_ino=100, st_size=1024)
+        st_file_2 = self.make_st_result(st_ino=101, st_size=2048)
+
+        # Different size files, should be False
+        self.assertFalse(
+            hardlink.eligible_for_hardlink(st1=st_file_1, st2=st_file_2, args=self.args)
+        )
+
+    def test_eligibile_for_hardlink_different_dev(self) -> None:
+
+        # Different inodes and different devices
+        st_file_1 = self.make_st_result(st_ino=100, st_dev=100)
+        st_file_2 = self.make_st_result(st_ino=101, st_dev=200)
+
+        # Different size files, should be False
+        self.assertFalse(
+            hardlink.eligible_for_hardlink(st1=st_file_1, st2=st_file_2, args=self.args)
+        )
+
+    def test_eligibile_for_hardlink_different_modes(self) -> None:
+
+        # Different inodes and different modes
+        st_file_1 = self.make_st_result(st_ino=100, st_mode=0o644)
+        st_file_2 = self.make_st_result(st_ino=101, st_mode=0o755)
+
+        # Different file modes, should be False
+        self.assertFalse(
+            hardlink.eligible_for_hardlink(st1=st_file_1, st2=st_file_2, args=self.args)
+        )
+
+        self.args.contentonly = True
+        # Different file modes, contentonly=True, should be True
+        self.assertTrue(
+            hardlink.eligible_for_hardlink(st1=st_file_1, st2=st_file_2, args=self.args)
+        )
+
+    def test_eligibile_for_hardlink_different_uid(self) -> None:
+
+        # Different inodes and different UIDs
+        st_file_1 = self.make_st_result(st_ino=100, st_uid=1000)
+        st_file_2 = self.make_st_result(st_ino=101, st_uid=2000)
+
+        # Different UIDs should be False
+        self.assertFalse(
+            hardlink.eligible_for_hardlink(st1=st_file_1, st2=st_file_2, args=self.args)
+        )
+
+        self.args.contentonly = True
+        # Different UIDs, contentonly=True, should be True
+        self.assertTrue(
+            hardlink.eligible_for_hardlink(st1=st_file_1, st2=st_file_2, args=self.args)
+        )
+
+    def test_eligibile_for_hardlink_different_gid(self) -> None:
+
+        # Different inodes and different GIDs
+        st_file_1 = self.make_st_result(st_ino=100, st_gid=1000)
+        st_file_2 = self.make_st_result(st_ino=101, st_gid=2000)
+
+        # Different GIDs should be False
+        self.assertFalse(
+            hardlink.eligible_for_hardlink(st1=st_file_1, st2=st_file_2, args=self.args)
+        )
+
+        self.args.contentonly = True
+        # Different GIDs, contentonly=True, should be True
+        self.assertTrue(
+            hardlink.eligible_for_hardlink(st1=st_file_1, st2=st_file_2, args=self.args)
+        )
+
+    def test_eligibile_for_hardlink_different_mtime(self) -> None:
+
+        # Different inodes and different GIDs
+        st_file_1 = self.make_st_result(st_ino=100, st_mtime=1000)
+        st_file_2 = self.make_st_result(st_ino=101, st_mtime=2000)
+
+        # Different mtimes should be False
+        self.assertFalse(
+            hardlink.eligible_for_hardlink(st1=st_file_1, st2=st_file_2, args=self.args)
+        )
+
+        self.args.contentonly = True
+        self.args.notimestamp = False
+        # Different mtimes, contentonly=True, should be True
+        self.assertTrue(
+            hardlink.eligible_for_hardlink(st1=st_file_1, st2=st_file_2, args=self.args)
+        )
+
+        self.args.contentonly = False
+        self.args.notimestamp = True
+        # Different mtimes, contentonly=True, should be True
+        self.assertTrue(
+            hardlink.eligible_for_hardlink(st1=st_file_1, st2=st_file_2, args=self.args)
         )
 
     def test_eligibile_for_hardlink_min_size(self) -> None:

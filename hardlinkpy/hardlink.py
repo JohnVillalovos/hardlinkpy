@@ -97,31 +97,41 @@ def eligible_for_hardlink(
     #   content only
     # * device is the same
 
+    # * NOT already hard linked to each other
     if is_already_hardlinked(st1=st1, st2=st2):
         return False
 
+    # * sizes are equal
+    if not (st1.st_size == st2.st_size):
+        return False
+
+    # * size is greater than or equal to args.min_size
     if st1.st_size < args.min_size:
         return False
 
-    result = (
-        (st1.st_size == st2.st_size)  # size is the same
-        and ((st1.st_mode == st2.st_mode) or (args.contentonly))
-        and (  # file mode is the same
-            (st1.st_uid == st2.st_uid)  # owner user id is the same
-            or (args.contentonly)  # OR we are comparing content only
-        )
-        and (
-            (st1.st_gid == st2.st_gid)  # owner group id is the same
-            or (args.contentonly)  # OR we are comparing content only
-        )
-        and (
-            (st1.st_mtime == st2.st_mtime)  # modified time is the same
-            or (args.notimestamp)  # OR date hashing is off
-            or (args.contentonly)  # OR we are comparing content only
-        )
-        and (st1.st_dev == st2.st_dev)  # device is the same
-    )
-    return result
+    if not args.contentonly:
+        # * file modes are equal
+        if not (st1.st_mode == st2.st_mode):
+            return False
+
+        # * owner user ids are equal
+        if not (st1.st_uid == st2.st_uid):
+            return False
+
+        # * owner group ids are equal
+        if not (st1.st_gid == st2.st_gid):
+            return False
+
+    if not args.contentonly and not args.notimestamp:
+        # * modified times are equal
+        if not (st1.st_mtime == st2.st_mtime):
+            return False
+
+    # * device is the same
+    if not (st1.st_dev == st2.st_dev):
+        return False
+
+    return True
 
 
 def are_file_contents_equal(
