@@ -291,6 +291,22 @@ class TestAreFilesHardlinkable(testtools.TestCase):
         )
 
 
+class TestHumanizeNumber(testtools.TestCase):
+    def test_humanize_number(self) -> None:
+
+        for expected, value in (
+            ("1 bytes", 1),
+            ("1.001 kibibytes", 1_025),
+            ("227.339 mebibytes", 238_382_393),
+            ("1148.692 gibibytes", 1_233_398_345_345),
+        ):
+            self.assertEqual(
+                expected,
+                hardlink.humanize_number(value),
+                f"Failure with input value {value}",
+            )
+
+
 def make_st_result(
     *,
     st_mode: int = 0o100664,

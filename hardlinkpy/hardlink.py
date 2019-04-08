@@ -425,12 +425,12 @@ class cStatistics(object):
 
 def humanize_number(number: int) -> str:
     if number > 1024 ** 3:
-        return "%.3f gibibytes" % (number / (1024.0 ** 3))
+        return "{:0.3f} gibibytes".format(number / (1024.0 ** 3))
     if number > 1024 ** 2:
-        return "%.3f mebibytes" % (number / (1024.0 ** 2))
+        return "{:0.3f} mebibytes".format(number / (1024.0 ** 2))
     if number > 1024:
-        return "%.3f kibibytes" % (number / 1024.0)
-    return "%d bytes" % number
+        return "{:0.3f} kibibytes".format(number / 1024.0)
+    return f"{number} bytes"
 
 
 def parse_args(passed_args: Optional[List[str]] = None) -> argparse.Namespace:
