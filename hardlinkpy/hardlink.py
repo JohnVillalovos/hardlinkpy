@@ -108,14 +108,6 @@ def eligible_for_hardlink(
     if is_already_hardlinked(st1=st1, st2=st2):
         return False
 
-    # * sizes are equal
-    if not (st1.st_size == st2.st_size):
-        return False
-
-    # * size is greater than or equal to args.min_size
-    if st1.st_size < args.min_size:
-        return False
-
     if not args.content_only:
         # * file modes are equal
         if not (st1.st_mode == st2.st_mode):
@@ -136,6 +128,18 @@ def eligible_for_hardlink(
 
     # * device is the same
     if not (st1.st_dev == st2.st_dev):
+        return False
+
+    # * sizes are equal
+    # The sizes should always be equal as the caller should ensure that, but to
+    # be safe we check anyway.
+    if not (st1.st_size == st2.st_size):
+        return False
+
+    # * size is greater than or equal to args.min_size
+    # The size should always be greater than or equal to the min size as the
+    # caller should ensure that, but to be safe we check anyway.
+    if st1.st_size < args.min_size:
         return False
 
     return True
