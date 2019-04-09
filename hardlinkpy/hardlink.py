@@ -160,31 +160,29 @@ def are_file_contents_equal(
     equal.
     """
 
-    # Open our two files
-    with open(filename1, "rb") as file1:
-        with open(filename2, "rb") as file2:
-            # Make sure open succeeded
-            if not (file1 and file2):
-                print("Error opening file in are_file_contents_equal")
-                print("Was attempting to open:")
-                print(f"file1: {filename1}")
-                print(f"file2: {filename2}")
-                return False
+    try:
+        # Open our two files
+        with open(filename1, "rb") as file1:
+            with open(filename2, "rb") as file2:
+                gStats.did_comparison()
+                if args.verbose >= 1:
+                    print(f"Comparing: {filename1}")
+                    print(f"     to  : {filename2}")
+                buffer_size = 1024 * 1024
+                while True:
+                    buffer1 = file1.read(buffer_size)
+                    buffer2 = file2.read(buffer_size)
+                    if buffer1 != buffer2:
+                        return False
 
-            gStats.did_comparison()
-            if args.verbose >= 1:
-                print(f"Comparing: {filename1}")
-                print(f"     to  : {filename2}")
-            buffer_size = 1024 * 1024
-            while True:
-                buffer1 = file1.read(buffer_size)
-                buffer2 = file2.read(buffer_size)
-                if buffer1 != buffer2:
-                    return False
-
-                if not buffer1:
-                    return True
-    # We shouldn't get here
+                    if not buffer1:
+                        return True
+    except (OSError, PermissionError) as exc:
+        print("Error opening file in are_file_contents_equal()")
+        print("Was attempting to open:")
+        print(f"file1: {filename1}")
+        print(f"file2: {filename2}")
+        print("When an exception occurred: {}".format(exc))
     return False
 
 
