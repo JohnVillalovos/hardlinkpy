@@ -554,6 +554,12 @@ def parse_args(passed_args: Optional[List[str]] = None) -> argparse.Namespace:
     return args
 
 
+def check_python_version() -> None:
+    # Make sure we have the minimum required Python version
+    if sys.version_info < (3, 6, 0):
+        sys.exit("ERROR: This program requires Python 3.6 or higher to run")
+
+
 # Start of global declarations
 debug = None
 debug1 = None
@@ -566,6 +572,8 @@ VERSION = "0.06 - 2019-04-07 (07-Apr-2019)"
 
 
 def main(passed_args: Optional[List[str]] = None) -> int:
+    check_python_version()
+
     # Parse our argument list and get our list of directories
     args = parse_args(passed_args=passed_args)
     # Compile up our regexes ahead of time
