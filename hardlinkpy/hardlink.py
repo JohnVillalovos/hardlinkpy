@@ -137,8 +137,6 @@ def eligible_for_hardlink(
         return False
 
     # * sizes are equal
-    # The sizes should always be equal as the caller should ensure that, but to
-    # be safe we check anyway.
     if not (st1.st_size == st2.st_size):
         return False
 
