@@ -566,7 +566,7 @@ gStats = cStatistics()
 
 file_hashes: Dict[int, List[FileInfo]] = {}
 
-VERSION = "0.06 - 2019-04-07 (07-Apr-2019)"
+VERSION = "0.7.0 - 2020-05-13 (13-May-2020)"
 
 
 def main(passed_args: Optional[List[str]] = None) -> int:
