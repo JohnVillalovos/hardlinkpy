@@ -298,7 +298,8 @@ class TestHumanizeNumber(testtools.TestCase):
             ("1 bytes", 1),
             ("1.001 kibibytes", 1_025),
             ("227.339 mebibytes", 238_382_393),
-            ("1148.692 gibibytes", 1_233_398_345_345),
+            ("217.369 gibibytes", 233_398_345_345),
+            ("1.122 tibibytes", 1_233_398_345_345),
         ):
             self.assertEqual(
                 expected,

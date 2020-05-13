@@ -440,6 +440,8 @@ class cStatistics(object):
 
 
 def humanize_number(number: int) -> str:
+    if number > 1024 ** 4:
+        return "{:0.3f} tibibytes".format(number / (1024.0 ** 4))
     if number > 1024 ** 3:
         return "{:0.3f} gibibytes".format(number / (1024.0 ** 3))
     if number > 1024 ** 2:
