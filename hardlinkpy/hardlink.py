@@ -234,16 +234,22 @@ def hardlink_files(
             # Try to recover
             try:
                 os.rename(temp_name, destfile)
-            except:  # noqa TODO(fix this bare except)
+            except Exception as exc:  # noqa TODO(fix this bare except)
                 print(
                     "BAD BAD - failed to rename back %s to %s" % (temp_name, destfile)
                 )
+                print("Caught exception: %s" % exc)
             result = False
         else:
             # hard link succeeded
             # Delete the renamed version since we don't need it.
             if not args.dry_run:
-                os.unlink(temp_name)
+                try:
+                    os.unlink(temp_name)
+                except FileNotFoundError:
+                    # If our temporary file disappears under us, ignore it.
+                    # Probably an rsync is running and deleted it.
+                    pass
             # update our stats
             gStats.did_hardlink(sourcefile, destfile, stat_info)
             if args.verbose >= 1:
