@@ -417,26 +417,29 @@ class cStatistics(object):
                 print(f"Hardlinked: {source}")
                 print(f"        to: {dest}")
             print()
-        print(f"Directories           : {self.dircount}")
-        print(f"Regular files         : {self.regularfiles}")
-        print(f"Comparisons           : {self.comparisons}")
-        print(f"Hardlinked this run   : {self.hardlinked_thisrun}")
+        print(f"Directories           : {self.dircount:,}")
+        print(f"Regular files         : {self.regularfiles:,}")
+        print(f"Comparisons           : {self.comparisons:,}")
+        print(f"Hardlinked this run   : {self.hardlinked_thisrun:,}")
         print(
-            "Total hardlinks       : {}".format(
+            "Total hardlinks       : {:,}".format(
                 self.hardlinked_previously + self.hardlinked_thisrun
             )
         )
         print(
-            "Bytes saved this run  : {} ({})".format(
+            "Bytes saved this run  : {:,} ({})".format(
                 self.bytes_saved_thisrun, humanize_number(self.bytes_saved_thisrun)
             )
         )
         totalbytes = self.bytes_saved_thisrun + self.bytes_saved_previously
         print(
-            "Total bytes saved     : %s (%s)"
-            % (totalbytes, humanize_number(totalbytes))
+            "Total bytes saved     : {:,} ({})".format(
+                totalbytes, humanize_number(totalbytes)
+            )
         )
-        print("Total run time        : {} seconds".format(time.time() - self.starttime))
+        print(
+            "Total run time        : {:,} seconds".format(time.time() - self.starttime)
+        )
 
 
 def humanize_number(number: int) -> str:
