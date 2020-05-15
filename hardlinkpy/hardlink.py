@@ -600,7 +600,8 @@ def main(passed_args: Optional[List[str]] = None) -> int:
                     exc,
                 )
                 continue
-            for dir_entry in dir_entries:
+            directories_found = []
+            for dir_entry in sorted(dir_entries, key=lambda x: x.name):
                 pathname = dir_entry.path
                 # Look at files/dirs beginning with "."
                 if dir_entry.name.startswith("."):
@@ -618,7 +619,7 @@ def main(passed_args: Optional[List[str]] = None) -> int:
                     continue
 
                 if dir_entry.is_dir():
-                    directories.append(pathname)
+                    directories_found.append(pathname)
                     continue
 
                 if dir_entry.stat(follow_symlinks=False).st_size < args.min_size:
@@ -626,6 +627,10 @@ def main(passed_args: Optional[List[str]] = None) -> int:
                         print(f"{pathname}: Size is not large enough, ignoring")
                     continue
                 hardlink_identical_files(dir_entry=dir_entry, args=args)
+            # Add our found directories in reverse order because we pop them
+            # off the end. Goal is to go through our directories in
+            # alphabetical order.
+            directories.extend(reversed(directories_found))
     if args.printstats:
         gStats.print_stats(args)
     return 0
