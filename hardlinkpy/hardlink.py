@@ -46,6 +46,7 @@
 #       everything at once.
 
 import argparse
+import logging
 import os
 import re
 import stat
@@ -230,15 +231,14 @@ def hardlink_files(
             if not args.dry_run:
                 os.link(sourcefile, destfile)
         except:  # noqa TODO(fix this bare except)
-            print(f"Failed to hardlink: {sourcefile} to {destfile}")
+            logging.exception(f"Failed to hardlink: {sourcefile} to {destfile}")
             # Try to recover
             try:
                 os.rename(temp_name, destfile)
-            except Exception as exc:  # noqa TODO(fix this bare except)
-                print(
+            except:  # noqa TODO(fix this bare except)
+                logging.exception(
                     "BAD BAD - failed to rename back %s to %s" % (temp_name, destfile)
                 )
-                print("Caught exception: %s" % exc)
             result = False
         else:
             # hard link succeeded
@@ -249,6 +249,7 @@ def hardlink_files(
                 except FileNotFoundError:
                     # If our temporary file disappears under us, ignore it.
                     # Probably an rsync is running and deleted it.
+                    logging.warning(f"Temporary file vanished: {temp_name}")
                     pass
             # update our stats
             gStats.did_hardlink(sourcefile, destfile, stat_info)
@@ -565,6 +566,17 @@ def check_python_version() -> None:
     # Make sure we have the minimum required Python version
     if sys.version_info < (3, 6, 0):
         sys.exit("ERROR: This program requires Python 3.6 or higher to run")
+
+
+def setup_logger(verbose_level: int) -> None:
+    log_level = logging.INFO
+    if verbose_level >= 1:
+        log_level = logging.DEBUG
+    # Setup logging format.
+    logging.basicConfig(
+        format="%(levelname)s:%(filename)s:%(funcName)s():L%(lineno)d %(message)s",
+        level=log_level,
+    )
 
 
 # Start of global declarations
