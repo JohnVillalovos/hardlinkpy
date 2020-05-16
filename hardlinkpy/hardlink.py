@@ -237,7 +237,9 @@ def hardlink_files(
                 os.rename(temp_name, destfile)
             except:  # noqa TODO(fix this bare except)
                 logging.exception(
-                    "BAD BAD - failed to rename back %s to %s" % (temp_name, destfile)
+                    "BAD BAD - failed to rename back {} to {}".format(
+                        temp_name, destfile
+                    )
                 )
             result = False
         else:
@@ -413,7 +415,9 @@ class cStatistics(object):
                 for filename in file_list:
                     print(f"                   : {filename}")
                 print(
-                    "Size per file: %s  Total saved: %s" % (size, size * len(file_list))
+                    "Size per file: {}  Total saved: {}".format(
+                        size, size * len(file_list)
+                    )
                 )
             print()
         if self.hardlinkstats:
@@ -444,9 +448,20 @@ class cStatistics(object):
                 totalbytes, humanize_number(totalbytes)
             )
         )
+        run_time = time.time() - self.starttime
         print(
-            "Total run time        : {:,} seconds".format(time.time() - self.starttime)
+            "Total run time        : {:,.2f} seconds ({})".format(
+                run_time, humanize_time(run_time)
+            )
         )
+
+
+def humanize_time(seconds: float) -> str:
+    if seconds > 3600:  # 3600 seconds = 1 hour
+        return "{:0.3f} hours".format(seconds / 3600.0)
+    if seconds > 60:
+        return "{:0.3f} minutes".format(seconds / 60.0)
+    return f"{seconds:,2f} seconds"
 
 
 def humanize_number(number: int) -> str:
