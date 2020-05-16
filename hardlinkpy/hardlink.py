@@ -513,6 +513,7 @@ def parse_args(passed_args: Optional[List[str]] = None) -> argparse.Namespace:
     parser.add_argument(
         "-t",
         "--timestamp-ignore",
+        "--ignore-timestamp",
         help="File modification times do NOT have to be identical",
         action="store_true",
         dest="notimestamp",
