@@ -458,9 +458,9 @@ class cStatistics(object):
 
 def humanize_time(seconds: float) -> str:
     if seconds > 3600:  # 3600 seconds = 1 hour
-        return "{:0.3f} hours".format(seconds / 3600.0)
+        return "{:0.2f} hours".format(seconds / 3600.0)
     if seconds > 60:
-        return "{:0.3f} minutes".format(seconds / 60.0)
+        return "{:0.2f} minutes".format(seconds / 60.0)
     return f"{seconds:,.2f} seconds"
 
 
