@@ -164,7 +164,7 @@ def are_file_contents_equal(
         with open(filename1, "rb") as file1:
             with open(filename2, "rb") as file2:
                 gStats.did_comparison()
-                if args.verbose >= 1:
+                if args.show_progress:
                     print(f"Comparing: {filename1}")
                     print(f"     to  : {filename2}")
                 buffer_size = 1024 * 1024
@@ -255,7 +255,7 @@ def hardlink_files(
                     pass
             # update our stats
             gStats.did_hardlink(sourcefile, destfile, stat_info)
-            if args.verbose >= 1:
+            if args.show_progress:
                 if args.dry_run:
                     print("Did NOT link.  Dry run")
                 size = stat_info.st_size
@@ -503,9 +503,16 @@ def parse_args(passed_args: Optional[List[str]] = None) -> argparse.Namespace:
     )
 
     parser.add_argument(
+        "--no-progress",
+        help="Don't print progress information during execution",
+        action="store_false",
+        dest="show_progress",
+    )
+
+    parser.add_argument(
         "-q",
         "--no-stats",
-        help="Do not print the statistics",
+        help="Do not print the final statistics",
         action="store_false",
         dest="printstats",
     )
@@ -563,6 +570,7 @@ def parse_args(passed_args: Optional[List[str]] = None) -> argparse.Namespace:
     args = parser.parse_args(args=passed_args)
     if args.quiet:
         args.verbose = 0
+        args.show_progress = False
         args.printstats = False
     if args.min_size < 1:
         parser.error("-s/--min-size must be 1 or greater")
