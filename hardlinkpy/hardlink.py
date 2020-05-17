@@ -402,7 +402,8 @@ class cStatistics(object):
         self.hardlinkstats.append((sourcefile, destfile))
 
     def print_stats(self, args: argparse.Namespace) -> None:
-        print("")
+        if args.show_progress:
+            print("")
         print("Hard linking Statistics:")
         # Print out the stats for the files we hardlinked, if any
         if self.previouslyhardlinked and args.printprevious:
